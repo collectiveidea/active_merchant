@@ -71,12 +71,11 @@ module ActiveMerchant #:nodoc:
         xml.tag! 'soap12:Envelope', ENVELOPE_NAMESPACES do
           xml.tag! 'soap12:Body' do
             xml.tag! 'Login', 'xmlns' => 'http://localhost/FTNIRDCService/' do
-              xml.tag! 'username', @options[:username]
+              xml.tag! 'username', @options[:login]
               xml.tag! 'password', @options[:password]
             end
           end
         end
-        
         return ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'})
         
         response = parse(ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
@@ -109,7 +108,7 @@ module ActiveMerchant #:nodoc:
             xml.tag! 'Logoff', 'xmlns' => 'http://localhost/FTNIRDCService/'
           end
         end
-        xml.target!
+        ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'})
       end
       
       def add_customer_data(post, options)

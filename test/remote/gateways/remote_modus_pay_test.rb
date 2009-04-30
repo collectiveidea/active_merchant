@@ -65,14 +65,14 @@ class RemoteModusPayTest < Test::Unit::TestCase
     assert_match /Invalid\/Suspended Credentials/, response
   end
   
-  # def test_successful_logoff
-  #   gateway = ModusPayGateway.new(
-  #               :login => 'testaccountuser@TEST',
-  #               :password => '01password'
-  #             )
-  #   gateway.send(:login)
-  #   
-  #   response = gateway.send(:logoff)
-  #   assert_success response
-  # end
+  def test_successful_logoff
+    gateway = ModusPayGateway.new(
+                :login => 'testaccountuser@TEST',
+                :password => '01password'
+              )
+    gateway.send(:login)
+    
+    response = gateway.send(:logoff)
+    assert_match /LoginoffResponse/, response
+  end
 end
