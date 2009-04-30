@@ -54,7 +54,25 @@ module ActiveMerchant #:nodoc:
         commit('capture', money, post)
       end
       
-    private    
+    private
+    def build_request(action, body)
+      xml = Builder::XmlMarkup.new
+      
+      xml.instruct!
+      xml.tag! 'env:Envelope', ENVELOPE_NAMESPACES do
+        xml.tag! 'env:Body' do
+          xml.tag! 'n1:SendAndCommit', SEND_AND_COMMIT_ATTRIBUTES do
+            xml.tag! 'SendAndCommitSource', SEND_AND_COMMIT_SOURCE_ATTRIBUTES do
+              add_credentials(xml)
+              add_transaction_type(xml, action)
+              xml << body
+            end
+          end
+        end
+      end
+      xml.target!
+    end
+    
       # <?xml version="1.0" encoding="utf-8"?>
       # <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
       #   <soap12:Body>
@@ -76,10 +94,9 @@ module ActiveMerchant #:nodoc:
             end
           end
         end
-        return ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'})
         
-        response = parse(ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
-        @ticket = response[:ticket]
+        response = doc = REXML::Document.new(ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
+        @ticket = doc.root.get_text('//Ticket')
         response
       end
       

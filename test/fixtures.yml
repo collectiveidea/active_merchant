@@ -69,8 +69,8 @@ modern_payments:
   password: password
   
 modus_pay:
-  login: testaccountuser@TEST
-  password: 01password
+  login: X
+  password: Y
   
 # Working credentials, no need to replace
 moneris:
