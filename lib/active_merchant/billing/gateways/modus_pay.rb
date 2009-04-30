@@ -71,8 +71,8 @@ module ActiveMerchant #:nodoc:
         xml.tag! 'soap12:Envelope', ENVELOPE_NAMESPACES do
           xml.tag! 'soap12:Body' do
             xml.tag! 'Login', 'xmlns' => 'http://localhost/FTNIRDCService/' do
-              xml.tag! 'username', options[:username]
-              xml.tag! 'password', options[:password]
+              xml.tag! 'username', @options[:username]
+              xml.tag! 'password', @options[:password]
             end
           end
         end

@@ -53,7 +53,7 @@ class RemoteModusPayTest < Test::Unit::TestCase
                 :password => '01password'
               )
     response = gateway.send(:login)
-    assert_success response
+    assert_match /LoginResult/, response
   end
   
   def test_unsuccessful_login
@@ -61,19 +61,18 @@ class RemoteModusPayTest < Test::Unit::TestCase
                 :login => '',
                 :password => ''
               )
-    assert response = gateway.purchase(@amount, @credit_card, @options)
-    assert_failure response
-    assert_match /Invalid\/Suspended Credentials/, response.message
+    response = gateway.send(:login)
+    assert_match /Invalid\/Suspended Credentials/, response
   end
   
-  def test_successful_logoff
-    gateway = ModusPayGateway.new(
-                :login => 'testaccountuser@TEST',
-                :password => '01password'
-              )
-    gateway.send(:login)
-    
-    response = gateway.send(:logoff)
-    assert_success response
-  end
+  # def test_successful_logoff
+  #   gateway = ModusPayGateway.new(
+  #               :login => 'testaccountuser@TEST',
+  #               :password => '01password'
+  #             )
+  #   gateway.send(:login)
+  #   
+  #   response = gateway.send(:logoff)
+  #   assert_success response
+  # end
 end
