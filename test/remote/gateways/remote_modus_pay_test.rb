@@ -48,17 +48,14 @@ class RemoteModusPayTest < Test::Unit::TestCase
   # 
   
   def test_successful_login
-    gateway = ModusPayGateway.new(fixtures(:modus_pay))
-    response = gateway.send(:login)
+    response = @gateway.send(:login)
     assert_not_nil response.root.get_elements('//LoginResult')[0]
   end
   
   def test_successful_login_sets_ticket
-    gateway = ModusPayGateway.new(fixtures(:modus_pay))
-    
-    assert_nil gateway.ticket
-    response = gateway.send(:login)
-    assert_not_nil gateway.ticket    
+    assert_nil @gateway.ticket
+    @gateway.send(:login)
+    assert_not_nil @gateway.ticket    
   end
   
   def test_unsuccessful_login
@@ -71,10 +68,9 @@ class RemoteModusPayTest < Test::Unit::TestCase
   end
   
   def test_successful_logoff
-    gateway = ModusPayGateway.new(fixtures(:modus_pay))
-    gateway.send(:login)
+    @gateway.send(:login)
     
-    response = gateway.send(:logoff)
+    response = @gateway.send(:logoff)
     assert_match /LogoffResponse/, response
   end
 end
