@@ -30,29 +30,23 @@ module ActiveMerchant #:nodoc:
         super
       end  
       
-      def authorize(money, creditcard, options = {})
-        post = {}
-        add_invoice(post, options)
-        add_creditcard(post, creditcard)        
-        add_address(post, creditcard, options)        
-        add_customer_data(post, options)
-        
-        commit('authonly', money, post)
-      end
+      # def authorize(money, creditcard, options = {})
+      #   post = {}
+      #   add_invoice(post, options)
+      #   add_creditcard(post, creditcard)        
+      #   add_address(post, creditcard, options)        
+      #   add_customer_data(post, options)
+      #   
+      #   commit('authonly', money, post)
+      # end
       
-      def purchase(money, creditcard, options = {})
-        post = {}
-        add_invoice(post, options)
-        add_creditcard(post, creditcard)        
-        add_address(post, creditcard, options)   
-        add_customer_data(post, options)
-             
-        commit('sale', money, post)
+      def purchase(money, check, options = {})
+        commit('sale', build_purchase_request(money, check, options))
       end                       
     
-      def capture(money, authorization, options = {})
-        commit('capture', money, post)
-      end
+      # def capture(money, authorization, options = {})
+      #   commit('capture', money, post)
+      # end
       
     private
     def build_request(action, body)
@@ -62,6 +56,13 @@ module ActiveMerchant #:nodoc:
       xml.tag! 'soap12:Envelope', ENVELOPE_NAMESPACES do
         add_ticket(xml)
       end
+      xml << body
+      xml.target!
+    end
+    
+    def build_purchase_request(amount, check, options)
+      xml = Builder::XmlMarkup.new
+      
       xml.tag! 'runTransaction', 'xmlns' => 'http://localhost/FTNIRDCService/' do
         xml.tag! 'token' do
           xml.tag! 'ClientIP', "replace me"
@@ -75,30 +76,8 @@ module ActiveMerchant #:nodoc:
         xml.tag! 'req' do
           xml.tag! 'AccountHolder', "replace me"
           xml.tag! 'AuthCode', "replace me"
-          xml.tag! 'BillingAddress' do
-            xml.tag! 'City', "replace me"
-            xml.tag! 'Company', "replace me"
-            xml.tag! 'Country', "replace me"
-            xml.tag! 'Email', "replace me"
-            xml.tag! 'Fax', "replace me"
-            xml.tag! 'FirstName', "replace me"
-            xml.tag! 'LastName', "replace me"
-            xml.tag! 'Phone', "replace me"
-            xml.tag! 'State', "replace me"
-            xml.tag! 'Street', "replace me"
-            xml.tag! 'Street2', "replace me"
-            xml.tag! 'Zip', "replace me"
-          end
-          xml.tag! 'CheckData' do
-            xml.tag! 'Account', "replace me"
-            xml.tag! 'AccountType', "replace me"
-            xml.tag! 'CheckNumber', "replace me"
-            xml.tag! 'DriversLicense', "replace me"
-            xml.tag! 'DriversLicenseState', "replace me"
-            xml.tag! 'RecordType', "replace me"
-            xml.tag! 'Routing', "replace me"
-            xml.tag! 'SSN', "replace me"
-          end
+          add_address(xml, options)
+          add_check(xml, check, options)
           xml.tag! 'ClientIP', "replace me"
           xml.tag! 'Command', "replace me"
           # <CreditCardData> 
@@ -122,34 +101,8 @@ module ActiveMerchant #:nodoc:
           #   <TermType>string</TermType> 
           #   <XID>string</XID> 
           # </CreditCardData> 
-          xml.tag! 'CustomerID', "replace me"
-          xml.tag! 'CustReceipt', false
-          xml.tag! 'CustReceiptSpecified', false
-          xml.tag! 'Details' do
-            xml.tag! 'Amount', 11.11
-            xml.tag! 'AmountSpecified', false
-            xml.tag! 'Clerk', "replace me"
-            xml.tag! 'Currency', "replace me"
-            xml.tag! 'Description', "replace me"
-            xml.tag! 'Comments', "replace me"
-            xml.tag! 'Discount', 2.22
-            xml.tag! 'DiscountSpecified', true
-            xml.tag! 'Invoice', "replace me"
-            xml.tag! 'NonTax', false
-            xml.tag! 'NonTaxSpecified', false
-            xml.tag! 'OrderID', "replace me"
-            xml.tag! 'PONum', "replace me"
-            xml.tag! 'Shipping', 6.66
-            xml.tag! 'ShippingSpecified', true
-            xml.tag! 'Subtotal', 23.12
-            xml.tag! 'SubtotalSpecified', true
-            xml.tag! 'Table', "replace me"
-            xml.tag! 'Tax', 1.11
-            xml.tag! 'TaxSpecified', true
-            xml.tag! 'Terminal', "replace me"
-            xml.tag! 'Tip', 2.34
-            xml.tag! 'TipSpecified', true
-          end
+          add_customer_data(xml)
+          add_details(xml, amount)
           xml.tag! 'IgnoreDuplicate', false
           xml.tag! 'IgnoreDuplicateSpecified', false
           # <RecurringBilling> 
@@ -161,20 +114,6 @@ module ActiveMerchant #:nodoc:
           #   <Schedule>string</Schedule> 
           # </RecurringBilling>
           xml.tag! 'RefNum', "replace me"
-          xml.tag! 'ShippingAddress' do
-            xml.tag! 'City', "replace me"
-            xml.tag! 'Company', "replace me"
-            xml.tag! 'Country', "replace me"
-            xml.tag! 'Email', "replace me"
-            xml.tag! 'Fax', "replace me"
-            xml.tag! 'FirstName', "replace me"
-            xml.tag! 'LastName', "replace me"
-            xml.tag! 'Phone', "replace me"
-            xml.tag! 'State', "replace me"
-            xml.tag! 'Street', "replace me"
-            xml.tag! 'Street2', "replace me"
-            xml.tag! 'Zip', "replace me"            
-          end
           xml.tag! 'Software', "replace me"
         end
       end
@@ -240,16 +179,90 @@ module ActiveMerchant #:nodoc:
         end
       end
       
-      def add_customer_data(post, options)
+      def add_customer_data(xml)
+        xml.tag! 'CustomerID', "replace me"
+        xml.tag! 'CustReceipt', false
+        xml.tag! 'CustReceiptSpecified', false
+      end
+      
+      def add_details(xml, amount)
+        xml.tag! 'Details' do
+          xml.tag! 'Amount', 11.11
+          xml.tag! 'AmountSpecified', false
+          xml.tag! 'Clerk', "replace me"
+          xml.tag! 'Currency', "replace me"
+          xml.tag! 'Description', "replace me"
+          xml.tag! 'Comments', "replace me"
+          xml.tag! 'Discount', 2.22
+          xml.tag! 'DiscountSpecified', true
+          xml.tag! 'Invoice', "replace me"
+          xml.tag! 'NonTax', false
+          xml.tag! 'NonTaxSpecified', false
+          xml.tag! 'OrderID', "replace me"
+          xml.tag! 'PONum', "replace me"
+          xml.tag! 'Shipping', 6.66
+          xml.tag! 'ShippingSpecified', true
+          xml.tag! 'Subtotal', 23.12
+          xml.tag! 'SubtotalSpecified', true
+          xml.tag! 'Table', "replace me"
+          xml.tag! 'Tax', 1.11
+          xml.tag! 'TaxSpecified', true
+          xml.tag! 'Terminal', "replace me"
+          xml.tag! 'Tip', 2.34
+          xml.tag! 'TipSpecified', true
+        end
       end
 
-      def add_address(post, creditcard, options)      
+      def add_address(xml, options)
+        if billing_address = options[:billing_address] || options[:address]
+          xml.tag! 'BillingAddress' do
+            xml.tag! 'City', billing_address[:city]
+            xml.tag! 'Company', "replace me"
+            xml.tag! 'Country', billing_address[:country]
+            xml.tag! 'Email', options[:email]
+            xml.tag! 'Fax', billing_address[:fax]
+            xml.tag! 'FirstName', billing_address[:name]
+            xml.tag! 'LastName', "replace me"
+            xml.tag! 'Phone', billing_address[:phone]
+            xml.tag! 'State', billing_address[:state]
+            xml.tag! 'Street', billing_address[:address1]
+            xml.tag! 'Street2', billing_address[:address2]
+            xml.tag! 'Zip', billing_address[:zip]
+          end
+        end
+        
+        if shipping_address = options[:shipping_address] || options[:address]
+          xml.tag! 'BillingAddress' do
+            xml.tag! 'City', shipping_address[:city]
+            xml.tag! 'Company', "replace me"
+            xml.tag! 'Country', shipping_address[:country]
+            xml.tag! 'Email', options[:email]
+            xml.tag! 'Fax', shipping_address[:fax]
+            xml.tag! 'FirstName', shipping_address[:name]
+            xml.tag! 'LastName', "replace me"
+            xml.tag! 'Phone', shipping_address[:phone]
+            xml.tag! 'State', shipping_address[:state]
+            xml.tag! 'Street', shipping_address[:address1]
+            xml.tag! 'Street2', shipping_address[:address2]
+            xml.tag! 'Zip', shipping_address[:zip]
+          end
+        end
       end
 
       def add_invoice(post, options)
       end
       
-      def add_creditcard(post, creditcard)      
+      def add_check(xml, check, options)
+        xml.tag! 'CheckData' do
+          xml.tag! 'Account', check.name
+          xml.tag! 'AccountType', check.account_type
+          xml.tag! 'CheckNumber', check.number
+          xml.tag! 'DriversLicense', options[:drivers_license_number]
+          xml.tag! 'DriversLicenseState', options[:drivers_license_state]
+          xml.tag! 'RecordType', "replace me"
+          xml.tag! 'Routing', check.routing_number
+          xml.tag! 'SSN', options[:ssn]
+        end
       end
       
       def parse(body)
@@ -264,9 +277,9 @@ module ActiveMerchant #:nodoc:
         response
       end     
       
-      def commit(action, money, parameters)
+      def commit(action, request)
         login
-        response = parse(ssl_post(URL, build_request(action, request), {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
+        parse(ssl_post(URL, build_request(action, request), {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
         logoff
       end
 

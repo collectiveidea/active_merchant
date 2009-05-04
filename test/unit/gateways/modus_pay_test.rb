@@ -2,10 +2,7 @@ require File.dirname(__FILE__) + '/../../test_helper'
 
 class ModusPayTest < Test::Unit::TestCase
   def setup
-    @gateway = ModusPayGateway.new(
-                 :login => 'testaccountuser',
-                 :password => '01password'
-               )
+    @gateway = ModusPayGateway.new(fixtures(:modus_pay))
 
     @credit_card = credit_card
     @amount = 100
