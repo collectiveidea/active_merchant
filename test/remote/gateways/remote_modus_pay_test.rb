@@ -25,7 +25,7 @@ class RemoteModusPayTest < Test::Unit::TestCase
   
   def test_successful_check_purchase
     assert response = @gateway.purchase(@amount, @check, @options)
-    # assert_success response
+    assert_success response
     # assert response.test?
     # assert_false response.authorization.blank?
   end
