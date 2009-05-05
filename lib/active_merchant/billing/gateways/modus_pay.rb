@@ -41,14 +41,14 @@ module ActiveMerchant #:nodoc:
       # end
       
       def purchase(money, check, options = {})
-        commit('sale', build_purchase_request(money, check, options))
+        commit('sale', build_transaction(money, check, options))
       end                       
     
       # def capture(money, authorization, options = {})
       #   commit('capture', money, post)
       # end
       
-    private
+  private
     def build_request(action, body)
       xml = Builder::XmlMarkup.new
       
@@ -60,7 +60,7 @@ module ActiveMerchant #:nodoc:
       xml.target!
     end
     
-    def build_purchase_request(amount, check, options)
+    def build_transaction(money, check, options)
       xml = Builder::XmlMarkup.new
       
       xml.tag! 'runTransaction', 'xmlns' => 'http://localhost/FTNIRDCService/' do
@@ -79,7 +79,13 @@ module ActiveMerchant #:nodoc:
           add_address(xml, options)
           add_check(xml, check, options)
           xml.tag! 'ClientIP', "replace me"
-          xml.tag! 'Command', "replace me"
+          xml.tag! 'Command', "replace me" 
+          add_customer_data(xml)
+          add_details(xml, money)
+          xml.tag! 'IgnoreDuplicate', false
+          xml.tag! 'IgnoreDuplicateSpecified', false
+          xml.tag! 'RefNum', "replace me"
+          xml.tag! 'Software', "replace me"
           # <CreditCardData> 
           #   <AvsStreet>string</AvsStreet> 
           #   <AvsZip>string</AvsZip> 
@@ -100,11 +106,7 @@ module ActiveMerchant #:nodoc:
           #   <Signature>string</Signature> 
           #   <TermType>string</TermType> 
           #   <XID>string</XID> 
-          # </CreditCardData> 
-          add_customer_data(xml)
-          add_details(xml, amount)
-          xml.tag! 'IgnoreDuplicate', false
-          xml.tag! 'IgnoreDuplicateSpecified', false
+          # </CreditCardData>
           # <RecurringBilling> 
           #   <Amount>double</Amount> 
           #   <Enabled>boolean</Enabled> 
@@ -113,8 +115,6 @@ module ActiveMerchant #:nodoc:
           #   <NumLeft>string</NumLeft> 
           #   <Schedule>string</Schedule> 
           # </RecurringBilling>
-          xml.tag! 'RefNum', "replace me"
-          xml.tag! 'Software', "replace me"
         end
       end
       xml.target!
@@ -185,12 +185,12 @@ module ActiveMerchant #:nodoc:
         xml.tag! 'CustReceiptSpecified', false
       end
       
-      def add_details(xml, amount)
+      def add_details(xml, money)
         xml.tag! 'Details' do
-          xml.tag! 'Amount', 11.11
+          xml.tag! 'Amount', amount(money)
           xml.tag! 'AmountSpecified', false
           xml.tag! 'Clerk', "replace me"
-          xml.tag! 'Currency', "replace me"
+          xml.tag! 'Currency', currency(money)
           xml.tag! 'Description', "replace me"
           xml.tag! 'Comments', "replace me"
           xml.tag! 'Discount', 2.22
