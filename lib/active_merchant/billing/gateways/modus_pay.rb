@@ -65,60 +65,66 @@ module ActiveMerchant #:nodoc:
     def build_transaction(money, check, options)
       xml = Builder::XmlMarkup.new
       
-      xml.tag! 'runTransaction', 'xmlns' => 'http://localhost/FTNIRDCService/' do
-        xml.tag! 'token' do
-        #   xml.tag! 'ClientIP', "replace me"
-          xml.tag! 'PinHash' do
-        #     xml.tag! 'HashValue', "replace me"
-        #     xml.tag! 'Seed', "replace me"
-        #     xml.tag! 'Type', "replace me"
-          end
-        #   xml.tag! 'SourceKey', "replace me"
-        end
-        xml.tag! 'req' do
-          # xml.tag! 'AccountHolder', "replace me"
-          # xml.tag! 'AuthCode', "replace me"
-          add_address(xml, options)
-          add_check(xml, check, options)
-          # xml.tag! 'ClientIP', "replace me"
-          # xml.tag! 'Command', "replace me" 
-          add_customer_data(xml)
-          add_details(xml, money)
-          xml.tag! 'IgnoreDuplicate', false
-          xml.tag! 'IgnoreDuplicateSpecified', false
-          # xml.tag! 'RefNum', "replace me"
-          # xml.tag! 'Software', "replace me"
-          # <CreditCardData> 
-          #   <AvsStreet>string</AvsStreet> 
-          #   <AvsZip>string</AvsZip> 
-          #   <CardCode>string</CardCode> 
-          #   <CardExpiration>string</CardExpiration> 
-          #   <CardNumber>string</CardNumber> 
-          #   <CardPresent>boolean</CardPresent> 
-          #   <CardPresentSpecified>boolean</CardPresentSpecified> 
-          #   <CardType>string</CardType> 
-          #   <CAVV>string</CAVV> 
-          #   <DUKPT>string</DUKPT> 
-          #   <ECI>string</ECI> 
-          #   <InternalCardAuth>boolean</InternalCardAuth> 
-          #   <InternalCardAuthSpecified>boolean</InternalCardAuthSpecified> 
-          #   <MagStripe>string</MagStripe> 
-          #   <MagSupport>string</MagSupport> 
-          #   <Pares>string</Pares> 
-          #   <Signature>string</Signature> 
-          #   <TermType>string</TermType> 
-          #   <XID>string</XID> 
-          # </CreditCardData>
-          # <RecurringBilling> 
-          #   <Amount>double</Amount> 
-          #   <Enabled>boolean</Enabled> 
-          #   <Expire>string</Expire> 
-          #   <Next>string</Next> 
-          #   <NumLeft>string</NumLeft> 
-          #   <Schedule>string</Schedule> 
-          # </RecurringBilling>
-        end
+      xml.tag! 'ProcessACHTransaction', 'xmlns' => 'http://localhost/FTNIRDCService/' do
+        add_check(xml, check, options)
+        xml.amount amount(money)
       end
+      
+      
+      # xml.tag! 'runTransaction', 'xmlns' => 'http://localhost/FTNIRDCService/' do
+      #   xml.tag! 'token' do
+      #   #   xml.tag! 'ClientIP', "replace me"
+      #     xml.tag! 'PinHash' do
+      #   #     xml.tag! 'HashValue', "replace me"
+      #   #     xml.tag! 'Seed', "replace me"
+      #   #     xml.tag! 'Type', "replace me"
+      #     end
+      #   #   xml.tag! 'SourceKey', "replace me"
+      #   end
+      #   xml.tag! 'req' do
+      #     # xml.tag! 'AccountHolder', "replace me"
+      #     # xml.tag! 'AuthCode', "replace me"
+      #     add_address(xml, options)
+      #     add_check(xml, check, options)
+      #     # xml.tag! 'ClientIP', "replace me"
+      #     # xml.tag! 'Command', "replace me" 
+      #     add_customer_data(xml)
+      #     add_details(xml, money)
+      #     xml.tag! 'IgnoreDuplicate', false
+      #     xml.tag! 'IgnoreDuplicateSpecified', false
+      #     # xml.tag! 'RefNum', "replace me"
+      #     # xml.tag! 'Software', "replace me"
+      #     # <CreditCardData> 
+      #     #   <AvsStreet>string</AvsStreet> 
+      #     #   <AvsZip>string</AvsZip> 
+      #     #   <CardCode>string</CardCode> 
+      #     #   <CardExpiration>string</CardExpiration> 
+      #     #   <CardNumber>string</CardNumber> 
+      #     #   <CardPresent>boolean</CardPresent> 
+      #     #   <CardPresentSpecified>boolean</CardPresentSpecified> 
+      #     #   <CardType>string</CardType> 
+      #     #   <CAVV>string</CAVV> 
+      #     #   <DUKPT>string</DUKPT> 
+      #     #   <ECI>string</ECI> 
+      #     #   <InternalCardAuth>boolean</InternalCardAuth> 
+      #     #   <InternalCardAuthSpecified>boolean</InternalCardAuthSpecified> 
+      #     #   <MagStripe>string</MagStripe> 
+      #     #   <MagSupport>string</MagSupport> 
+      #     #   <Pares>string</Pares> 
+      #     #   <Signature>string</Signature> 
+      #     #   <TermType>string</TermType> 
+      #     #   <XID>string</XID> 
+      #     # </CreditCardData>
+      #     # <RecurringBilling> 
+      #     #   <Amount>double</Amount> 
+      #     #   <Enabled>boolean</Enabled> 
+      #     #   <Expire>string</Expire> 
+      #     #   <Next>string</Next> 
+      #     #   <NumLeft>string</NumLeft> 
+      #     #   <Schedule>string</Schedule> 
+      #     # </RecurringBilling>
+      #   end
+      # end
       xml.target!
     end
     
@@ -144,7 +150,9 @@ module ActiveMerchant #:nodoc:
           end
         end
         
-        response = doc = REXML::Document.new(ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
+        x = ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'})
+        puts x
+        response = doc = REXML::Document.new(x)
         @ticket = doc.root.get_text('//Ticket')
         response
       end
@@ -255,16 +263,17 @@ module ActiveMerchant #:nodoc:
       end
       
       def add_check(xml, check, options)
-        xml.tag! 'CheckData' do
-          xml.tag! 'Account', check.name
-          xml.tag! 'AccountType', check.account_type
-          xml.tag! 'CheckNumber', check.number
-          xml.tag! 'DriversLicense', options[:drivers_license_number]
-          xml.tag! 'DriversLicenseState', options[:drivers_license_state]
-          # xml.tag! 'RecordType', "replace me"
-          xml.tag! 'Routing', check.routing_number
-          xml.tag! 'SSN', options[:ssn]
-        end
+        # <proc_inst>string</proc_inst>
+        # <settlement>string</settlement>
+        # <as_of_date>string</as_of_date>
+        # <deposit_date>string</deposit_date>
+        # <bank_name>string</bank_name>
+        xml.account_number check.account_number
+        xml.aba_number check.routing_number
+        xml.status 'A'
+        xml.name1 check.first_name
+        xml.name2 check.last_name
+        # xml.deposit_date, Date.today.strftime("%m/%d/%Y")
       end
       
       def parse(body)
