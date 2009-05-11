@@ -7,25 +7,17 @@ class RemoteModusPayTest < Test::Unit::TestCase
     @gateway = ModusPayGateway.new(fixtures(:modus_pay))
     
     @amount = 100
-    # @credit_card = credit_card('4000100011112224')
-    # @declined_card = credit_card('4000300011112220')
     @check = check
     
-    @options = { 
-      :order_id => '1',
-      :billing_address => address,
-      :shipping_address => address,
-      :email => 'sam@example.com',
-      :drivers_license_state => 'CA',
-      :drivers_license_number => '12345689',
-      :date_of_birth => Date.new(1978, 8, 11),
-      :ssn => '078051120'
+    @options = {
     }
   end
   
   def test_successful_check_purchase
-    assert response = @gateway.purchase(@amount, @check, @options)
-    assert_success response
+    response = @gateway.purchase(@amount, @check, @options)
+    
+    assert_match /ProcessACHTransactionResult/, response
+    # assert_success response
     # assert response.test?
     # assert_false response.authorization.blank?
   end
