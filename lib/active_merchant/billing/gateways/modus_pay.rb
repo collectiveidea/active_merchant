@@ -173,7 +173,7 @@ module ActiveMerchant #:nodoc:
       def commit(action, request)
         login
         req = build_request(action, request)
-        response = ssl_post(URL, req, {'Content-Type'=> 'application/soap+xml; charset=utf-8'})
+        response = REXML::Document.new(ssl_post(URL, req, {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
         logoff
         response
       end

@@ -8,26 +8,22 @@ class RemoteModusPayTest < Test::Unit::TestCase
     
     @amount = 100
     @check = check
-    
+
     @options = {
     }
   end
   
   def test_successful_check_purchase
-    response = @gateway.purchase(@amount, @check, @options)
-    
-    assert_match /ProcessACHTransactionResult/, response
-    # assert_success response
-    # assert response.test?
-    # assert_false response.authorization.blank?
+    response = @gateway.purchase(@amount, @check, @options)    
+    assert_not_nil response.root.get_elements('//ProcessACHTransactionResult')[0]
   end
   
-  # def test_unsuccessful_purchase
-  #   assert response = @gateway.purchase(@amount, @declined_card, @options)
-  #   assert_failure response
-  #   assert_equal 'REPLACE WITH FAILED PURCHASE MESSAGE', response.message
-  # end
-  # 
+  def test_unsuccessful_check_purchase
+    @check.routing_number = ""
+    
+    response = @gateway.purchase(@amount, @check, @options)
+    assert_nil response.root.get_elements('//ProcessACHTransactionResult')[0]
+  end  
   
   def test_successful_login
     response = @gateway.send(:login)
