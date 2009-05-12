@@ -104,9 +104,7 @@ module ActiveMerchant #:nodoc:
           end
         end
         
-        x = ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'})
-        puts x
-        response = doc = REXML::Document.new(x)
+        response = doc = REXML::Document.new(ssl_post(URL, xml.target!, {'Content-Type'=> 'application/soap+xml; charset=utf-8'}))
         @ticket = doc.root.get_text('//Ticket')
         response
       end
