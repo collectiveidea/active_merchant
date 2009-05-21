@@ -63,6 +63,14 @@ module ActiveMerchant #:nodoc:
           else false
         end
       end
+      
+      def last_digits
+        self.class.last_digits(account_number)
+      end
+      
+      def self.last_digits(number)     
+        number.to_s.length <= 4 ? number : number.to_s.slice(-4..-1) 
+      end
     end
   end
 end
