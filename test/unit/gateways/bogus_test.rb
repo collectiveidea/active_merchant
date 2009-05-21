@@ -8,32 +8,37 @@ class BogusTest < Test::Unit::TestCase
     )
     
     @creditcard = credit_card('1')
+    @check = check(:account_number => '1')
     
     @response = ActiveMerchant::Billing::Response.new(true, "Transaction successful", :transid => BogusGateway::AUTHORIZATION)
   end
 
   def test_authorize
-    @gateway.capture(1000, @creditcard)    
+    assert @gateway.capture(1000, @creditcard).success?
   end
 
   def test_purchase
-    @gateway.purchase(1000, @creditcard)    
+    assert @gateway.purchase(1000, @creditcard).success?   
+  end
+  
+  def test_purchase_check
+    assert @gateway.purchase(1000, @check).success?
   end
 
   def test_credit
-    @gateway.credit(1000, @response.params["transid"])
+    assert @gateway.credit(1000, @response.params["transid"]).success?
   end
 
   def test_void
-    @gateway.void(@response.params["transid"])
+    assert @gateway.void(@response.params["transid"]).success?
   end
   
   def  test_store
-    @gateway.store(@creditcard)
+    assert @gateway.store(@creditcard).success?
   end
   
   def test_unstore
-    @gateway.unstore('1')
+    assert @gateway.unstore('1').success?
   end
   
   def test_supported_countries

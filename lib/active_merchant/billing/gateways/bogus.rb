@@ -28,8 +28,8 @@ module ActiveMerchant #:nodoc:
         end      
       end
   
-      def purchase(money, creditcard, options = {})
-        case creditcard.number
+      def purchase(money, payment_source, options = {})
+        case payment_source.kind_of?(CreditCard) ? payment_source.number : payment_source.account_number
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:paid_amount => money.to_s}, :test => true)
         when '2'
