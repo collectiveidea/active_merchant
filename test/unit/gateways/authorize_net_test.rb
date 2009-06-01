@@ -8,6 +8,7 @@ class AuthorizeNetTest < Test::Unit::TestCase
     )
     @amount = 100
     @credit_card = credit_card
+    @check = check
     @subscription_id = '100748'
   end
 
@@ -20,10 +21,28 @@ class AuthorizeNetTest < Test::Unit::TestCase
     assert_equal '508141794', response.authorization
   end
   
+  def test_successful_check_authorization
+    @gateway.expects(:ssl_post).returns(successful_authorization_response)
+  
+    assert response = @gateway.authorize(@amount, @check)
+    assert_instance_of Response, response
+    assert_success response
+    assert_equal '508141794', response.authorization
+  end
+  
   def test_successful_purchase
     @gateway.expects(:ssl_post).returns(successful_purchase_response)
   
     assert response = @gateway.purchase(@amount, @credit_card)
+    assert_instance_of Response, response
+    assert_success response
+    assert_equal '508141795', response.authorization
+  end
+
+  def test_successful_check_purchase
+    @gateway.expects(:ssl_post).returns(successful_purchase_response)
+  
+    assert response = @gateway.purchase(@amount, @check)
     assert_instance_of Response, response
     assert_success response
     assert_equal '508141795', response.authorization

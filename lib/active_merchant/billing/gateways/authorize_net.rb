@@ -85,7 +85,8 @@ module ActiveMerchant #:nodoc:
       def authorize(money, creditcard, options = {})
         post = {}
         add_invoice(post, options)
-        add_creditcard(post, creditcard)
+        # add_creditcard(post, creditcard)
+        add_payment_source(post, creditcard, options)
         add_address(post, options)
         add_customer_data(post, options)
         add_duplicate_window(post)
@@ -103,7 +104,8 @@ module ActiveMerchant #:nodoc:
       def purchase(money, creditcard, options = {})
         post = {}
         add_invoice(post, options)
-        add_creditcard(post, creditcard)
+        # add_creditcard(post, creditcard)
+        add_payment_source(post, creditcard, options)
         add_address(post, options)
         add_customer_data(post, options)
         add_duplicate_window(post)
@@ -307,6 +309,34 @@ module ActiveMerchant #:nodoc:
         post[:exp_date]   = expdate(creditcard)
         post[:first_name] = creditcard.first_name
         post[:last_name]  = creditcard.last_name
+      end
+      
+      def add_payment_source(post, source, options={})
+        case determine_funding_source(source)
+        when :credit_card then add_creditcard(post, source)
+        when :check       then add_check(post, source)
+        end
+      end
+      
+      def determine_funding_source(source) 
+        case 
+        when source.class == ActiveMerchant::Billing::CreditCard then :credit_card 
+        when source.class == ActiveMerchant::Billing::Check then :check 
+        else raise ArgumentError, "Unsupported funding source provided"
+        end
+      end
+      
+      def add_check(post, check) 
+        post[:method] = 'ECHECK'
+        post[:bank_aba_code] = check.routing_number
+        post[:bank_acct_num] = check.account_number
+        post[:bank_acct_type] = check.account_type
+        #post[:bank_name]="bank_name"  #The name of the bank that holds the customer’s account, Up to 50 characters 
+        #post[:bank_acct_name]="bank_acct_name" #The name associated with the bank account,Up to 50 characters 
+        post[:echeck_type] = "WEB"
+        post[:x_bank_check_number] = check.number
+        post[:checkname] = check.name
+        post[:account_holder_type] = check.account_holder_type
       end
 
       def add_customer_data(post, options)
